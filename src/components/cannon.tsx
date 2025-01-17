@@ -9,7 +9,13 @@ import { useEffect, useRef, useState } from "react";
  * Props: Force(30), Torque(force/2), mass(2),colour(hotpink),scale(1.5)
  */
 
-const Cannon = () => {
+interface ForceProps {
+  mass: number;
+  colour: string;
+  scale: number;
+}
+
+const Cannon = (props: ForceProps) => {
   const canonRef = useRef<RapierRigidBody>(null);
   const [init, setInit] = useState(false);
 
@@ -41,15 +47,18 @@ const Cannon = () => {
           // Apply an impulse to the object to move it forward
           canonRef.current.applyImpulse(
             {
-              x: (x.current as number) * -30, //force
-              y: (y.current as number) * -30,
-              z: (z.current as number) * -30,
+              x: (x.current as number) * -(props.mass * 60), //force
+              y: (y.current as number) * -(props.mass * 60),
+              z: (z.current as number) * -(props.mass * 60),
             },
             true
           );
 
           // Apply a torque impulse to create a rotation
-          canonRef.current.applyTorqueImpulse({ x: 10, y: 10, z: 10 }, true);
+          canonRef.current.applyTorqueImpulse(
+            { x: 0, y: props.mass * 6, z: 0 },
+            true
+          );
 
           // Reset forces and torques on the object
           canonRef.current.resetForces(true);
@@ -71,7 +80,7 @@ const Cannon = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [camera.position.z, camera.position.x, camera.position.y]);
+  }, [camera.position.z, camera.position.x, camera.position.y, props.mass]);
 
   return (
     <>
@@ -81,10 +90,10 @@ const Cannon = () => {
             ref={canonRef}
             position={[camera.position.x, camera.position.y, camera.position.z]}
             type="dynamic"
-            mass={2} //mass
+            mass={props.mass} //mass
           >
-            <Sphere scale={[1.5, 1.5, 1.5]}>
-              <meshStandardMaterial color="hotpink" /> {/*colour*/}
+            <Sphere scale={[props.scale, props.scale, props.scale]}>
+              <meshStandardMaterial color={props.colour} /> {/*colour*/}
             </Sphere>
           </RigidBody>
         </group>
